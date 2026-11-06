@@ -1,0 +1,32 @@
+{
+  "id": "places.decide-together",
+  "name": "Decide Together",
+  "version": "0.1.0",
+  "description": "Vote on a shortlist and reveal your household\u2019s favorite places.",
+  "permissions": [
+    "places.read",
+    "search.query"
+  ],
+  "nav": [
+    {
+      "path": "/m/places.decide-together",
+      "label": "Decide Together",
+      "slot": "more",
+      "mobileIcon": "vote"
+    }
+  ],
+  "source": "upload",
+  "sdkVersion": "1.0.0",
+  "requiredCapabilities": [
+    "persistent-data"
+  ],
+  "serverEntry": "./server/index.js",
+  "webEntry": "./web/index.js",
+  "icon": "web/assets/icon.svg",
+  "webRoutes": [
+    {
+      "path": "/m/places.decide-together",
+      "exportName": "DecideTogetherPage"
+    }
+  ]
+}
