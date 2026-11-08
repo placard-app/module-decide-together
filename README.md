@@ -4,7 +4,7 @@ Choose a place with your household. An organizer selects two to fifty household-
 
 Install using `https://github.com/JobiJoba/plugins#places.decide-together`, or upload the built `.placard-module` in Placard’s module marketplace. Requires SDK 1, persistent-data, and household mode. Static host navigation may show the entry in solo mode, where the page explains the requirement.
 
-Place cards show saved photos, categories and opening hours. Missing photos have a placeholder. Private and deleted places become unavailable, and their votes are excluded before reveal. Members can choose again. Revealed counts remain fixed, while place details continue to follow the viewer’s access.
+Place cards show saved photos, categories and opening hours. Cards without photos use a compact text layout. View place opens the shared place details in a new tab during shortlisting, voting, and results. Private and deleted places become unavailable, and their votes are excluded before reveal. Members can choose again. Revealed counts remain fixed, while place details continue to follow the viewer’s access.
 
 Only the organizer can reveal, after at least one eligible ballot. Voting closes permanently at reveal. Open polls refresh every five seconds. Revisit polls from the module page after a reload.
 

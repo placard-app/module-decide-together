@@ -1,8 +1,8 @@
 {
   "id": "places.decide-together",
   "name": "Decide Together",
-  "version": "0.1.0",
-  "description": "Vote on a shortlist and reveal your household\u2019s favorite places.",
+  "version": "0.1.1",
+  "description": "Vote on a shortlist and reveal your household’s favorite places.",
   "permissions": [
     "places.read",
     "search.query"

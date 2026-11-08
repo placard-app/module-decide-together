@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react"
 import type { Place, Poll } from "../shared/poll.ts"
 
+import { styles } from "./styles.ts"
+
 const API = "/api/m/places.decide-together"
 async function api<T>(path: string, body?: unknown): Promise<T> {
   const response = await fetch(API + path, {
@@ -39,37 +41,57 @@ function Hours({ place }: { place: Place }) {
     </details>
   )
 }
-function Card({ place, children }: { place: Place | null; children?: React.ReactNode }) {
+function ballots(count: number) {
+  return count + (count === 1 ? " ballot" : " ballots")
+}
+
+function Card({
+  place,
+  marked,
+  children,
+}: {
+  place: Place | null
+  marked?: boolean
+  children?: React.ReactNode
+}) {
   const [failedPhoto, setFailedPhoto] = useState<string | null>(null)
   return (
-    <article className="dt-card">
-      {place ? (
-        <>
-          <div className="dt-photo">
-            {place.coverThumbUrl && failedPhoto !== place.coverThumbUrl ? (
-              <img
-                src={place.coverThumbUrl}
-                alt=""
-                onError={() => setFailedPhoto(place.coverThumbUrl ?? null)}
-              />
-            ) : (
-              <span>No photo available</span>
+    <article className={"dt-card" + (marked ? " dt-marked" : "")}>
+      {place?.coverThumbUrl && failedPhoto !== place.coverThumbUrl && (
+        <img
+          className="dt-photo"
+          src={place.coverThumbUrl}
+          alt=""
+          onError={() => setFailedPhoto(place.coverThumbUrl ?? null)}
+        />
+      )}
+      <div className="dt-body">
+        <div>
+          {place && <p className="dt-category">{place.category.replaceAll("_", " ")}</p>}
+          <h3>{place?.name ?? "Place unavailable"}</h3>
+        </div>
+        {place ? (
+          <Hours place={place} />
+        ) : (
+          <p className="dt-muted">This place is no longer available to the household.</p>
+        )}
+        {(children || place) && (
+          <div className="dt-actions dt-card-footer">
+            {children}
+            {place && (
+              <a
+                className="dt-link"
+                href={"/places/" + encodeURIComponent(place.id)}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`View place: ${place.name} (opens in a new tab)`}
+              >
+                View place <span aria-hidden="true">↗</span>
+              </a>
             )}
           </div>
-          <div className="dt-card-body">
-            <h3>{place.name}</h3>
-            <p>{place.category.replaceAll("_", " ")}</p>
-            <Hours place={place} />
-            {children}
-          </div>
-        </>
-      ) : (
-        <div className="dt-card-body">
-          <h3>Place unavailable</h3>
-          <p>This place is no longer shared with the household.</p>
-          {children}
-        </div>
-      )}
+        )}
+      </div>
     </article>
   )
 }
@@ -127,90 +149,120 @@ export function DecideTogetherPage() {
       setBusy(false)
     }
   }
+  const matches = places.filter(
+    (place) =>
+      place.name.toLowerCase().includes(query.trim().toLowerCase()) &&
+      (!category || place.category === category),
+  )
   return (
     <main className="dt-page">
-      <style>{`
-.dt-page{max-width:1080px;margin:auto;padding:32px 20px;color:var(--foreground,inherit);font-family:inherit}.dt-page h1{font-size:clamp(28px,5vw,44px);letter-spacing:-.04em;margin-bottom:8px}.dt-page h3{margin:0;font-size:20px}.dt-page button,.dt-page input,.dt-page select{font:inherit;border:1px solid #9ca8a3;border-radius:10px;padding:10px 14px;background:var(--background,white);color:inherit}.dt-page button{cursor:pointer}.dt-page button:disabled{opacity:.5;cursor:default}.dt-page button:focus-visible,.dt-page input:focus-visible,.dt-page select:focus-visible{outline:3px solid #329d84;outline-offset:3px}.dt-page .dt-primary{background:#176956;color:white;border-color:#176956}.dt-toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:24px 0}.dt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));gap:20px}.dt-card{border:1px solid #a8b6af;border-radius:16px;overflow:hidden}.dt-photo{height:160px;background:#e3ebe6;color:#395c4d;display:grid;place-items:center}.dt-photo img{width:100%;height:100%;object-fit:cover}.dt-card-body{padding:20px}.dt-card-body p{margin:8px 0 16px}.dt-card-body button,.dt-card-body a{display:inline-block;margin-top:18px}.dt-page summary{cursor:pointer}.dt-page label{display:flex;gap:8px;align-items:center}.dt-page input[type=text]{max-width:100%;box-sizing:border-box}.dt-page .dt-title{width:100%;margin:20px 0}.dt-error{border:1px solid #c65b50;padding:14px;border-radius:10px}.dt-winner{font-weight:bold;color:#21846a}
-`}</style>
-      <h1>Decide Together</h1>
-      <p>Find the place everyone is looking forward to.</p>
+      <style>{styles}</style>
       {error && (
         <p role="alert" className="dt-error">
           {error}
         </p>
       )}
+      {current && (
+        <button
+          className="dt-back"
+          disabled={busy}
+          onClick={() => {
+            setCurrent(null)
+            void action(load)
+          }}
+        >
+          ← Back to polls
+        </button>
+      )}
+      <header>
+        <h1>{current?.title ?? (creating ? "Choose your shortlist" : "Decide Together")}</h1>
+        {current ? (
+          <>
+            <div className="dt-meta">
+              <span className="dt-status">
+                {current.revealed ? "Voting closed" : "Voting open"}
+              </span>
+              <span className="dt-muted" aria-live="polite">
+                {ballots(current.ballotCount)} {current.revealed ? "counted" : "cast"}
+              </span>
+            </div>
+            {!current.revealed && (
+              <p>
+                Choose one favorite. You can change your vote until the organizer reveals the
+                result.
+              </p>
+            )}
+          </>
+        ) : (
+          !creating && <p className="dt-muted">Choose a place to visit with your household.</p>
+        )}
+      </header>
       {!ready ? (
         <p role="status">Loading household…</p>
       ) : !household ? (
         <p>Household mode is required. Enable it in Placard settings to choose a place together.</p>
       ) : current ? (
         <>
-          <button
-            onClick={() => {
-              setCurrent(null)
-              void action(load)
-            }}
-          >
-            Back to polls
-          </button>
-          <h2>{current.title}</h2>
-          <p aria-live="polite">
-            {current.ballotCount} {current.ballotCount === 1 ? "ballot" : "ballots"}{" "}
-            {current.revealed ? "counted" : "cast"}
-          </p>
           {current.revealed ? (
-            <h2>
+            <h2 className="dt-section">
               {current.options.filter((o) => o.winner).length > 1
                 ? "Your joint favorites"
                 : "Your household’s favorite"}
             </h2>
           ) : (
-            <p>
-              Choose one favorite. You can change your vote until the organizer reveals the result.
+            <p className="dt-notice">
+              Places must stay shared with your household for everyone to view their details.
             </p>
           )}
           <div className="dt-grid">
-            {current.options.map((option) => (
-              <Card key={option.placeId} place={option.place}>
-                {current.revealed ? (
-                  <>
+            {current.options.map((option) => {
+              const voted = current.ownVote === option.placeId
+              return (
+                <Card
+                  key={option.placeId}
+                  place={option.place}
+                  marked={current.revealed ? option.winner : voted}
+                >
+                  {current.revealed ? (
                     <p className={option.winner ? "dt-winner" : ""}>
                       {option.winner && "★ Favorite · "}
                       {option.count} {option.count === 1 ? "vote" : "votes"}
                     </p>
-                    {option.place && (
-                      <a href={"/places/" + encodeURIComponent(option.placeId)}>View place</a>
-                    )}
-                  </>
-                ) : (
-                  option.place && (
-                    <button
-                      aria-pressed={current.ownVote === option.placeId}
-                      disabled={busy}
-                      className={current.ownVote === option.placeId ? "dt-primary" : ""}
-                      onClick={() =>
-                        void action(async () =>
-                          setCurrent(
-                            await api<Poll>("/polls/" + current.id + "/vote", {
-                              placeId: option.placeId,
-                            }),
-                          ),
-                        )
-                      }
-                    >
-                      {current.ownVote === option.placeId
-                        ? "Your vote"
-                        : "Vote for " + option.place.name}
-                    </button>
-                  )
-                )}
-              </Card>
-            ))}
+                  ) : (
+                    option.place && (
+                      <button
+                        className={"dt-button" + (voted ? " dt-primary" : "")}
+                        aria-pressed={voted}
+                        aria-label={voted ? "Your vote" : "Vote for " + option.place.name}
+                        disabled={busy}
+                        onClick={() =>
+                          void action(async () =>
+                            setCurrent(
+                              await api<Poll>("/polls/" + current.id + "/vote", {
+                                placeId: option.placeId,
+                              }),
+                            ),
+                          )
+                        }
+                      >
+                        {voted ? (
+                          <>
+                            <span aria-hidden="true">✓ </span>Your vote
+                          </>
+                        ) : (
+                          "Vote"
+                        )}
+                      </button>
+                    )
+                  )}
+                </Card>
+              )
+            })}
           </div>
           {!current.revealed && current.organizerId === actor && (
-            <div className="dt-toolbar">
+            <div className="dt-actions dt-footer">
               <button
-                className="dt-primary"
+                className="dt-button dt-primary"
                 disabled={busy || !current.ballotCount}
                 onClick={() =>
                   void action(async () =>
@@ -220,27 +272,26 @@ export function DecideTogetherPage() {
               >
                 Reveal result
               </button>
+              <p className="dt-muted">Revealing the result closes voting for everyone.</p>
             </div>
           )}
         </>
       ) : creating ? (
         <>
-          <h2>Choose your shortlist</h2>
-          <label>
+          <label className="dt-field">
             Poll title
-            <input
-              className="dt-title"
-              value={title}
-              maxLength={200}
-              onChange={(e) => setTitle(e.target.value)}
-            />
+            <input value={title} maxLength={200} onChange={(e) => setTitle(e.target.value)} />
           </label>
-          <div className="dt-toolbar">
-            <label>
+          <p className="dt-notice">
+            To include a place, open it in Placard and choose ‘Share with household’. Everyone in
+            your household can then view its details.
+          </p>
+          <div className="dt-filters">
+            <label className="dt-field">
               Search places
-              <input type="text" value={query} onChange={(e) => setQuery(e.target.value)} />
+              <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} />
             </label>
-            <label>
+            <label className="dt-field">
               Category
               <select value={category} onChange={(e) => setCategory(e.target.value)}>
                 <option value="">All categories</option>
@@ -252,20 +303,23 @@ export function DecideTogetherPage() {
               </select>
             </label>
           </div>
-          <p>{selected.length} places selected. Choose at least two household-shared places.</p>
+          <div className="dt-meta dt-section">
+            <h2>Choose 2–50 places</h2>
+            <span className="dt-status" aria-live="polite">
+              {selected.length} selected
+            </span>
+          </div>
           <div className="dt-grid">
-            {places
-              .filter(
-                (p) =>
-                  p.name.toLowerCase().includes(query.toLowerCase()) &&
-                  (!category || p.category === category),
-              )
-              .map((place) => (
-                <Card key={place.id} place={place}>
-                  <label>
+            {matches.map((place) => {
+              const checked = selected.includes(place.id)
+              return (
+                <Card key={place.id} place={place} marked={checked}>
+                  <label className="dt-choice">
                     <input
                       type="checkbox"
-                      checked={selected.includes(place.id)}
+                      checked={checked}
+                      aria-label={"Shortlist " + place.name}
+                      disabled={!checked && selected.length >= 50}
                       onChange={(e) =>
                         setSelected(
                           e.target.checked
@@ -274,17 +328,20 @@ export function DecideTogetherPage() {
                         )
                       }
                     />
-                    Shortlist {place.name}
+                    Shortlist
                   </label>
                 </Card>
-              ))}
+              )
+            })}
           </div>
-          {!places.length && (
-            <p>Share places with your household in Placard to build a shortlist.</p>
+          {!places.length ? (
+            <p>No places are shared with your household yet.</p>
+          ) : (
+            !matches.length && <p>No places match your search and category.</p>
           )}
-          <div className="dt-toolbar">
+          <div className="dt-actions dt-footer">
             <button
-              className="dt-primary"
+              className="dt-button dt-primary"
               disabled={busy || !title.trim() || selected.length < 2 || selected.length > 50}
               onClick={() =>
                 void action(async () => {
@@ -295,43 +352,59 @@ export function DecideTogetherPage() {
             >
               Open voting
             </button>
-            <button onClick={() => setCreating(false)}>Cancel</button>
+            <button className="dt-button" disabled={busy} onClick={() => setCreating(false)}>
+              Cancel
+            </button>
           </div>
         </>
       ) : (
         <>
-          <div className="dt-toolbar">
+          <div className="dt-actions">
             <button
-              className="dt-primary"
+              className="dt-button dt-primary"
+              disabled={busy}
               onClick={() => {
                 setTitle("")
                 setSelected([])
+                setQuery("")
+                setCategory("")
                 setCreating(true)
                 void action(load)
               }}
             >
               New poll
             </button>
-            <button disabled={busy} onClick={() => void action(load)}>
+            <button className="dt-button" disabled={busy} onClick={() => void action(load)}>
               Refresh polls
             </button>
           </div>
-          {!polls.length && <p>No polls yet. Start with a few places you would like to visit.</p>}
+          <h2 className="dt-section">Household polls</h2>
+          {!polls.length && (
+            <p className="dt-muted">
+              No polls yet. Start with a few places you would like to visit.
+            </p>
+          )}
           <div className="dt-grid">
             {polls.map((poll) => (
-              <article className="dt-card dt-card-body" key={poll.id}>
-                <h2>{poll.title}</h2>
-                <p>
-                  {poll.revealed ? "Result revealed" : "Voting open"} · {poll.ballotCount} ballots
-                </p>
-                <button
-                  disabled={busy}
-                  onClick={() =>
-                    void action(async () => setCurrent(await api<Poll>("/polls/" + poll.id)))
-                  }
-                >
-                  Open {poll.title}
-                </button>
+              <article className="dt-card dt-body" key={poll.id}>
+                <div className="dt-meta">
+                  <span className="dt-status">
+                    {poll.revealed ? "Result revealed" : "Voting open"}
+                  </span>
+                  <span className="dt-muted">{ballots(poll.ballotCount)}</span>
+                </div>
+                <h3>{poll.title}</h3>
+                <div>
+                  <button
+                    className="dt-button"
+                    disabled={busy}
+                    onClick={() =>
+                      void action(async () => setCurrent(await api<Poll>("/polls/" + poll.id)))
+                    }
+                  >
+                    {poll.revealed ? "View results" : "Vote"}
+                  </button>
+                </div>
               </article>
             ))}
           </div>
