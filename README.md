@@ -18,7 +18,7 @@ Module HTTP routes under `/api/m/places.decide-together` are GET `/places`, GET/
 
 ## Development
 
-Run `pnpm install` at the workspace root. Use `pnpm typecheck`, `test`, `build`, or `test:e2e`. Browser tests require Docker and the sibling Placard checkout with built web assets. Set PLACARD_CORE_DIR to override its location.
+Run `pnpm install` at the repository root. Use `pnpm typecheck`, `test`, `build`, or `test:e2e`. Browser tests require Docker and the sibling Placard checkout with built web assets. Set PLACARD_CORE_DIR to override its location.
 
 The build produces versioned zip and .placard-module archives in dist.
 
