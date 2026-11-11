@@ -1,0 +1,9 @@
+node_modules/
+pack/
+dist/
+.DS_Store
+*.log
+*.sqlite*
+test-results/
+playwright-report/
+.host/
