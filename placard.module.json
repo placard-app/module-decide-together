@@ -1,7 +1,7 @@
 {
   "id": "places.decide-together",
   "name": "Decide Together",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Vote on a shortlist and reveal your household’s favorite places.",
   "permissions": [
     "places.read",
@@ -20,6 +20,7 @@
   "requiredCapabilities": [
     "persistent-data"
   ],
+  "cover": "web/assets/cover.webp",
   "serverEntry": "./server/index.js",
   "webEntry": "./web/index.js",
   "icon": "web/assets/icon.svg",
