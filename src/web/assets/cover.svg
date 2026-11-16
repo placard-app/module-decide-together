@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360">
+  <title>Decide Together illustration showing a shared shortlist and a favorite place</title>
+  <rect width="640" height="360" fill="#344b40"/>
+  <g fill="#faf6ef" stroke="#c4a574" stroke-width="2">
+    <rect x="115" y="72" width="126" height="162" rx="8" transform="rotate(-8 178 153)"/>
+    <rect x="399" y="72" width="126" height="162" rx="8" transform="rotate(8 462 153)"/>
+    <rect x="247" y="54" width="146" height="194" rx="8"/>
+  </g>
+  <g fill="none" stroke="#b6a58d" stroke-width="7" stroke-linecap="round">
+    <path d="M145 177h58m-58 20h38M437 177h58m-58 20h38M278 190h84m-84 22h58"/>
+  </g>
+  <g fill="#e4dfca">
+    <circle cx="176" cy="128" r="24"/>
+    <circle cx="464" cy="128" r="24"/>
+  </g>
+  <circle cx="320" cy="121" r="40" fill="#176956"/>
+  <path d="m299 121 14 14 28-30" fill="none" stroke="#faf6ef" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="320" y="310" text-anchor="middle" fill="#f2ebe0" font-family="sans-serif" font-size="30" font-weight="600" letter-spacing="4">DECIDE TOGETHER</text>
+</svg>
